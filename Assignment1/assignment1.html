@@ -1,0 +1,80 @@
+<!--
+    Internet Applications Assignment 1
+    Oscar O'Neill
+    Student number: 17330989
+    07/11/2020
+-->
+<!DOCTYPE html>
+<html>
+    <title>IA Assignment 1</title>
+    <body>
+        <script src="https://cdn.jsdelivr.net/npm/vue@2.6.12/dist/vue.js"></script>
+
+        <div id="app">
+            <h1>Oscar O'Neill Weather App</h1>
+            <h2 id="weatherInTitle">Weather in {{ yourCity }}</h2>
+
+            <!--City input and button-->
+            Where are you headed?: <input v-model="yourCity"><br>
+            <button v-on:click="sendCity">Get weather</button>
+
+            <!--Packing recommendations-->
+            <p v-if="packForRain!=null">RAIN?: {{packForRain}}</p>
+            <p v-if="packForTemp!=null">GENERAL TEMPERATURE: PACK FOR {{packForTemp}}</p>
+            <p v-if="error!=null">ERROR: {{error}}</p>
+
+            <table v-if="summary.length>0">
+                <!--Table column headings-->
+                <tr>
+                    <th>Date/time</th>
+                    <th>Temperature (Celcius)</th>
+                    <th>Windspeed (Meter/sec)</th>
+                    <th>Rainfall (mm)</th>
+                </tr>
+                <!--Create a table entry for each 3 hour time period in summary data-->
+                <tr v-for="entry in summary">
+                    <td> {{entry.dateTime}} </td>
+                    <td> {{entry.tempRange}} </td>
+                    <td> {{entry.windSpeed}} </td>
+                    <td> {{entry.rainLevel}} </td>
+                </tr>
+            </table>
+        </div>
+
+        <script>
+            var vueApp = new Vue({
+                // el: which element Vue is ‘mounted’ to on the DOM
+                el:'#app',
+                // data: all variables in here are made ‘reactive’
+                data: {
+                    // The city the user plans on going
+                    yourCity: null,
+                    // The weather summary data array
+                    summary: [],
+                    // How should the user pack for temperature?
+                    packForTemp: null,
+                    // Should the user pack for rain?
+                    packForRain: null,
+                    // Was there an error?
+                    error: null
+                },
+                methods:{
+                    sendCity: getCityInfo 
+                }
+            })
+
+            function getCityInfo() {
+                // Called prom because fetch returns a promise
+                let prom = fetch("/weather/" + this.yourCity);
+                // Get respone JSON data, plug it into Vue variables
+                prom.then(response => response.json())
+                    .then(response => {
+                        this.error = response.error;
+                        this.packForRain = response.packForRain;
+                        this.packForTemp = response.packForTemp;
+                        this.summary = response.list;
+                    })
+            }
+        </script>
+    </body>
+</html>

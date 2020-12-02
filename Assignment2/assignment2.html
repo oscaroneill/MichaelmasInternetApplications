@@ -1,0 +1,77 @@
+<!--
+    Internet Applications Assignment 2
+    Oscar O'Neill
+    Student number: 17330989
+    02/12/2020
+-->
+<!DOCTYPE html>
+<html>
+    <title>IA Assignment 2</title>
+    <body>
+        <script src="https://cdn.jsdelivr.net/npm/vue@2.6.12/dist/vue.js"></script>
+
+        <div id="app">
+            <!--Movie inputs and buttons-->
+            <button v-on:click="createDatabaseBtn">Create Database</button><br>
+
+            Movie name: <input v-model="userMovieName"><br>
+            Movie year: <input v-model="userMovieYear"><br>
+            <button v-on:click="queryDatabaseBtn">Query Database</button><br>
+
+            <button v-on:click="destroyDatabaseBtn">Destroy Database</button>
+
+            <!-- Query results section -->
+            <p v-if="queryMovies.length>0">Movies starting with "{{userMovieName}}" from {{userMovieYear}}</p>
+            <li v-for="movie in queryMovies" :key="movie.movieName">
+                {{ movie.movieName }}
+            </li>
+        </div>
+
+        <script>
+            var vueApp = new Vue({
+                el:'#app',
+                data: {
+                    userMovieName: null,
+                    userMovieYear: null,
+                    queryMovies: []
+                },
+                methods:{
+                    createDatabaseBtn: createDatabase,
+                    queryDatabaseBtn: queryDatabase,
+                    destroyDatabaseBtn: destroyDatabase 
+                }
+            })
+
+            function createDatabase() {
+                /*
+                Should cause your Node.js server to make a table in a DynamoDB database – fetch the raw
+                data from the S3 object and upload it to the newly created database. You can use a small sub-set of
+                the fields including [title, release-date, rank].
+                */
+                console.log("Create Database!");
+                let prom = fetch("/create");
+            }
+            function queryDatabase() {
+                /* 
+                Should cause your Node.js server to find all the movies in a given year, that begin-with the
+                entered text string – and display them on the web-page.
+                */
+                console.log("Query Database!");
+                let prom = fetch("/query/" + this.userMovieYear + "/" + this.userMovieName);
+                // Get respone JSON data, plug it into Vue variables
+                prom.then(response => response.json())
+                    .then(response => {
+                        this.queryMovies = response.list;
+                        console.log(response.list);
+                    })
+            }
+            function destroyDatabase() {
+                /*
+                Should cause the database table to be deleted.
+                */
+                console.log("Destroy Database!");
+                let prom = fetch("/destroy");  
+            }
+        </script>
+    </body>
+</html>
